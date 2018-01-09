@@ -5,8 +5,7 @@ var queue = require('d3-queue').queue;
 var cacheBusterDate = +new Date();
 
 // leaflet-image
-module.exports = function leafletImage(map, callback) {
-
+module.exports = function leafletImage(map, callback, filters, includePane, excludePane) {
     var hasMapbox = !!L.mapbox;
 
     var dimensions = map.getSize(),
@@ -16,6 +15,9 @@ module.exports = function leafletImage(map, callback) {
     canvas.width = dimensions.x;
     canvas.height = dimensions.y;
     var ctx = canvas.getContext('2d');
+
+    // set any filters globally
+    ctx.filter = filters;
 
     // dummy canvas image when loadTile get 404 error
     // and layer don't have errorTileUrl
@@ -30,7 +32,7 @@ module.exports = function leafletImage(map, callback) {
     // tiles, paths, and then markers
     map.eachLayer(drawTileLayer);
     map.eachLayer(drawEsriDynamicLayer);
-    
+
     if (map._pathRoot) {
         layerQueue.defer(handlePathRoot, map._pathRoot);
     } else if (map._panes) {
@@ -50,11 +52,11 @@ module.exports = function leafletImage(map, callback) {
             layerQueue.defer(handleMarkerLayer, l);
         }
     }
-    
+
     function drawEsriDynamicLayer(l) {
         if (!L.esri) return;
-       
-        if (l instanceof L.esri.DynamicMapLayer) {                       
+
+        if (l instanceof L.esri.DynamicMapLayer) {
             layerQueue.defer(handleEsriDymamicLayer, l);
         }
     }
@@ -123,8 +125,23 @@ module.exports = function leafletImage(map, callback) {
                     var tile = layer._tiles[tilePoint.x + ':' + tilePoint.y];
                     tileQueue.defer(canvasTile, tile, tilePos, tileSize);
                 } else {
-                    var url = addCacheString(layer.getTileUrl(tilePoint));
-                    tileQueue.defer(loadTile, url, tilePos, tileSize);
+                    // check if custom function is attached to handle original css visiblity of the layer
+                    var shouldLoadTile = true;
+                    if (typeof layer._isVisible === 'function' && layer._isVisible() === false) {
+                        shouldLoadTile = false;
+                    }
+                    console.log('includePane', includePane, layer.options.pane, layer.options.pane !== includePane)
+                    if (includePane && layer.options.pane !== includePane) {
+                        shouldLoadTile = false;
+                    }
+                    if (excludePane && layer.options.pane === excludePane) {
+                        shouldLoadTile = false;
+                    }
+
+                    if (shouldLoadTile) {
+                        var url = addCacheString(layer.getTileUrl(tilePoint));
+                        tileQueue.defer(loadTile, url, tilePos, tileSize);
+                    }
                 }
             }
         });
@@ -228,18 +245,18 @@ module.exports = function leafletImage(map, callback) {
 
         if (isBase64) im.onload();
     }
-    
+
     function handleEsriDymamicLayer(dynamicLayer, callback) {
         var canvas = document.createElement('canvas');
         canvas.width = dimensions.x;
         canvas.height = dimensions.y;
-    
+
         var ctx = canvas.getContext('2d');
-    
+
         var im = new Image();
         im.crossOrigin = '';
         im.src = addCacheString(dynamicLayer._currentImage._image.src);
-    
+
         im.onload = function() {
             ctx.drawImage(im, 0, 0);
             callback(null, {
