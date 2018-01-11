@@ -131,7 +131,6 @@ module.exports = function leafletImage(map, callback, filters, includePane, excl
                     if (typeof layer._isVisible === 'function' && layer._isVisible() === false) {
                         shouldLoadTile = false;
                     }
-                    console.log('includePane', includePane, layer.options.pane, layer.options.pane !== includePane)
                     if (includePane && layer.options.pane !== includePane) {
                         shouldLoadTile = false;
                     }
