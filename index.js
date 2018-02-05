@@ -125,9 +125,9 @@ module.exports = function leafletImage(map, callback, filters, includePane, excl
                     var tile = layer._tiles[tilePoint.x + ':' + tilePoint.y];
                     tileQueue.defer(canvasTile, tile, tilePos, tileSize);
                 } else {
-                    // check if custom function is attached to handle original css visiblity of the layer
+                    // check original css visiblity of the layer
                     var shouldLoadTile = true;
-                    if (layer._isVisible === false) {
+                    if (layer.getContainer().style.visibility === 'hidden') {
                         shouldLoadTile = false;
                     }
                     if (includePane && layer.options.pane !== includePane) {
