@@ -127,7 +127,7 @@ module.exports = function leafletImage(map, callback, filters, includePane, excl
                 } else {
                     // check if custom function is attached to handle original css visiblity of the layer
                     var shouldLoadTile = true;
-                    if (typeof layer._isVisible === 'function' && layer._isVisible() === false) {
+                    if (layer._isVisible === false) {
                         shouldLoadTile = false;
                     }
                     if (includePane && layer.options.pane !== includePane) {
