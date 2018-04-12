@@ -1,5 +1,5 @@
 {
-  "name": "leaflet-image",
+  "name": "leaflet-image-mheppner",
   "version": "0.4.0",
   "description": "export leaflet maps as images",
   "main": "index.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/mapbox/leaflet-image.git"
+    "url": "git://github.com/mheppner/leaflet-image.git"
   },
   "keywords": [
     "leaflet",
